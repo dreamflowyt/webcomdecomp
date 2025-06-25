@@ -12,7 +12,7 @@ import { formatBytes } from '@/lib/utils';
 import { UploadCloud, File as FileIcon, X, Sparkles, Cpu, Download, BarChart2, CircleDashed } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type Algorithm = 'huffman' | 'rle' | 'lz77';
+type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate';
 type OperationType = 'compression' | 'decompression';
 
 interface Results {
@@ -36,6 +36,10 @@ const algorithmDetails: Record<Algorithm, { name: string; description: string }>
     name: 'LZ77',
     description: 'Best for text with repeating sequences of characters.',
   },
+  deflate: {
+    name: 'DEFLATE',
+    description: 'Combines LZ77 and Huffman. Great for general purpose use.',
+  },
 };
 
 const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
@@ -43,13 +47,14 @@ const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
   if (lowerCaseName.includes('huffman')) return 'huffman';
   if (lowerCaseName.includes('rle') || lowerCaseName.includes('run-length')) return 'rle';
   if (lowerCaseName.includes('lz77')) return 'lz77';
+  if (lowerCaseName.includes('deflate')) return 'deflate';
   return undefined;
 };
 
 const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOutput => {
   if (fileType === 'text') {
     return {
-      suggestedAlgorithm: 'LZ77',
+      suggestedAlgorithm: 'DEFLATE',
     };
   }
   if (fileType === 'image') {
@@ -144,11 +149,11 @@ export default function ShrinkWrapPage() {
       const originalSize = file.size;
 
       if (type === 'compression') {
-        const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55 };
+        const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40 };
         processedSize = originalSize * factors[algorithm];
         ratio = ((originalSize - processedSize) / originalSize) * 100;
       } else { // Decompression
-        const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55 };
+        const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40 };
         processedSize = originalSize * factors[algorithm]; // Here originalSize is the compressed size
       }
       

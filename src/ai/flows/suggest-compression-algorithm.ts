@@ -17,7 +17,7 @@ const SuggestCompressionAlgorithmInputSchema = z.object({
 export type SuggestCompressionAlgorithmInput = z.infer<typeof SuggestCompressionAlgorithmInputSchema>;
 
 const SuggestCompressionAlgorithmOutputSchema = z.object({
-  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type (e.g., Huffman, RLE, LZ77).'),
+  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type (e.g., Huffman, RLE, LZ77, DEFLATE).'),
 });
 export type SuggestCompressionAlgorithmOutput = z.infer<typeof SuggestCompressionAlgorithmOutputSchema>;
 
@@ -27,7 +27,6 @@ export async function suggestCompressionAlgorithm(input: SuggestCompressionAlgor
 
 const prompt = ai.definePrompt({
   name: 'suggestCompressionAlgorithmPrompt',
-  model: 'googleai/gemini-2.0-flash',
   input: {schema: SuggestCompressionAlgorithmInputSchema},
   output: {schema: SuggestCompressionAlgorithmOutputSchema},
   prompt: `Given the file type: {{{fileType}}}, suggest the most effective compression algorithm.
@@ -36,9 +35,11 @@ Only consider these algorithms:
 - Huffman Coding
 - Run-Length Encoding
 - LZ77
+- DEFLATE
 
-Return only the name of the suggested algorithm. For example: "LZ77".
+Return only the name of the suggested algorithm. For example: "DEFLATE".
 `,
+  model: 'googleai/gemini-2.0-flash',
 });
 
 const suggestCompressionAlgorithmFlow = ai.defineFlow(
