@@ -50,18 +50,15 @@ const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOut
   if (fileType === 'text') {
     return {
       suggestedAlgorithm: 'LZ77',
-      reason: 'Fallback: LZ77 is generally effective for text files with repeating patterns.',
     };
   }
   if (fileType === 'image') {
     return {
       suggestedAlgorithm: 'Run-Length Encoding',
-      reason: 'Fallback: RLE can be effective for images with large areas of solid color.',
     };
   }
   return {
     suggestedAlgorithm: 'Huffman Coding',
-    reason: 'Fallback: Huffman Coding is a versatile algorithm suitable for various binary files.',
   };
 };
 
@@ -331,7 +328,6 @@ export default function ShrinkWrapPage() {
                 ) : aiSuggestion ? (
                   <div>
                     <p className="font-medium">For your file type, we suggest: <span className="text-primary">{aiSuggestion.suggestedAlgorithm}</span></p>
-                    <p className="text-sm text-muted-foreground mt-1">{aiSuggestion.reason}</p>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">Upload a file to get an AI-powered recommendation.</p>

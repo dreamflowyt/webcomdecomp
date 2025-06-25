@@ -17,8 +17,7 @@ const SuggestCompressionAlgorithmInputSchema = z.object({
 export type SuggestCompressionAlgorithmInput = z.infer<typeof SuggestCompressionAlgorithmInputSchema>;
 
 const SuggestCompressionAlgorithmOutputSchema = z.object({
-  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type.'),
-  reason: z.string().describe('The reasoning behind the algorithm suggestion.'),
+  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type (e.g., Huffman, RLE, LZ77).'),
 });
 export type SuggestCompressionAlgorithmOutput = z.infer<typeof SuggestCompressionAlgorithmOutputSchema>;
 
@@ -31,14 +30,14 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-2.0-flash',
   input: {schema: SuggestCompressionAlgorithmInputSchema},
   output: {schema: SuggestCompressionAlgorithmOutputSchema},
-  prompt: `Given the file type: {{{fileType}}}, suggest the most effective compression algorithm and explain why.
+  prompt: `Given the file type: {{{fileType}}}, suggest the most effective compression algorithm.
 
-Consider these algorithms:
-- Huffman Coding: Best for files with frequent repeating characters.
-- Run-Length Encoding (RLE): Best for files with long sequences of the same character.
-- LZ77: Best for text files with repeating sequences of characters.
+Only consider these algorithms:
+- Huffman Coding
+- Run-Length Encoding
+- LZ77
 
-Return the suggested algorithm and a brief explanation.
+Return only the name of the suggested algorithm. For example: "LZ77".
 `,
 });
 
