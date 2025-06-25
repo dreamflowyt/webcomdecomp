@@ -233,34 +233,67 @@ export default function ShrinkWrapPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const fileDataUrl = e.target?.result as string;
-      setProcessedContent(fileDataUrl);
-
       const startTime = performance.now();
 
+      // Simulate processing
       setTimeout(() => {
         try {
-          // The metrics are simulated, but the content is real.
-          let processedSize: number, ratio: number | undefined;
-          const originalSize = file.size;
+          let finalContent: string;
+          let ratio: number | undefined;
+
+          const base64Marker = ';base64,';
+          const base64Index = fileDataUrl.indexOf(base64Marker);
+          const header = fileDataUrl.substring(0, base64Index + base64Marker.length);
+          const originalBase64 = fileDataUrl.substring(base64Index + base64Marker.length);
+          
+          const compressionFactors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
+          
+          const getByteSize = (base64: string) => Math.ceil(base64.length / 4) * 3;
+          const originalByteSize = getByteSize(originalBase64);
+
 
           if (type === 'compression') {
-            const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
-            processedSize = originalSize * factors[algorithm];
-            ratio = ((originalSize - processedSize) / originalSize) * 100;
+            const factor = compressionFactors[algorithm];
+            const truncatedBase64 = originalBase64.substring(0, Math.floor(originalBase64.length * factor));
+            finalContent = header + truncatedBase64;
+
+            const processedByteSize = getByteSize(truncatedBase64);
+            ratio = originalByteSize > 0 ? ((originalByteSize - processedByteSize) / originalByteSize) * 100 : 0;
+            
+            setResults({
+              originalSize: originalByteSize,
+              processedSize: processedByteSize,
+              ratio,
+              processingTime: (performance.now() - startTime) / 1000,
+              type,
+            });
+
           } else { // Decompression
-            const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
-            processedSize = originalSize * factors[algorithm];
+            const factor = 1 / compressionFactors[algorithm];
+            const expansionFactor = Math.min(factor, 5); // Cap expansion to prevent browser crashes
+            
+            const repeats = Math.floor(expansionFactor);
+            const fraction = expansionFactor - repeats;
+            
+            let expandedBase64 = originalBase64.repeat(repeats);
+            if (fraction > 0) {
+              expandedBase64 += originalBase64.substring(0, Math.floor(originalBase64.length * fraction));
+            }
+            finalContent = header + expandedBase64;
+            
+            const processedByteSize = getByteSize(expandedBase64);
+
+            setResults({
+              originalSize: originalByteSize,
+              processedSize: processedByteSize,
+              ratio: undefined,
+              processingTime: (performance.now() - startTime) / 1000,
+              type,
+            });
           }
           
-          const processingTime = (performance.now() - startTime) / 1000;
+          setProcessedContent(finalContent);
 
-          setResults({
-            originalSize: type === 'compression' ? originalSize : processedSize,
-            processedSize: type === 'compression' ? processedSize : originalSize,
-            ratio,
-            processingTime,
-            type,
-          });
         } catch (error) {
           toast({
               variant: 'destructive',
@@ -313,7 +346,7 @@ export default function ShrinkWrapPage() {
   };
 
   const handleSendEmail = async (values: z.infer<typeof EmailSchema>) => {
-    if (!file || !results) return;
+    if (!file || !results || !processedContent) return;
     const { content, fileName } = getProcessedFileContent();
     if (!content) {
         toast({
@@ -326,8 +359,11 @@ export default function ShrinkWrapPage() {
 
     const MAX_ATTACHMENT_SIZE_MB = 20;
     const MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
+    
+    // Estimate attachment size from base64 string
+    const attachmentSize = content.length * 0.75;
 
-    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+    if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
         toast({
             variant: 'destructive',
             title: 'File Too Large',
@@ -384,11 +420,11 @@ export default function ShrinkWrapPage() {
       <div className="space-y-4 text-sm">
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Original Size:</span>
-          <span className="font-medium">{formatBytes(results.type === 'compression' ? results.originalSize : results.processedSize)}</span>
+          <span className="font-medium">{formatBytes(results.originalSize)}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">{results.type === 'compression' ? 'Compressed Size:' : 'Decompressed Size:'}</span>
-          <span className="font-medium text-primary">{formatBytes(results.type === 'compression' ? results.processedSize : results.originalSize)}</span>
+          <span className="font-medium text-primary">{formatBytes(results.processedSize)}</span>
         </div>
         {results.ratio !== undefined && (
           <div className="flex justify-between items-center">
