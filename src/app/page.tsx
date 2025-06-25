@@ -7,26 +7,31 @@ const algorithms = [
     icon: Binary,
     name: 'Huffman Coding',
     description: 'Best for files with frequent repeating characters.',
+    url: 'https://www.geeksforgeeks.org/huffman-coding-greedy-algo-3/',
   },
   {
     icon: Repeat,
     name: 'Run-Length Encoding',
     description: 'Best for files with long sequences of the same character.',
+    url: 'https://www.geeksforgeeks.org/run-length-encoding/',
   },
   {
     icon: TextCursorInput,
     name: 'LZ77',
     description: 'Best for text with repeating sequences of characters.',
+    url: 'https://www.geeksforgeeks.org/lzw-lempel-ziv-welch-compression-technique/',
   },
   {
     icon: Package,
     name: 'DEFLATE',
     description: 'Combines LZ77 and Huffman. Great for general purpose use.',
+    url: 'https://www.geeksforgeeks.org/deflate-algorithm-in-data-compression/',
   },
   {
     icon: FileText,
     name: 'PDF Optimization',
     description: 'Advanced optimization for PDF files, including image re-compression.',
+    url: 'https://www.geeksforgeeks.org/understanding-the-basics-of-file-compression/',
   },
 ];
 
@@ -73,16 +78,24 @@ export default function WelcomePage() {
               Our Algorithms Explained
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto mt-4">
-              ShrinkWrap uses a variety of powerful algorithms. Here’s a quick guide to what they do best.
+              ShrinkWrap uses a variety of powerful algorithms. Click on any card to learn more.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
             {algorithms.map((algo) => (
-              <div key={algo.name} className="p-6 border rounded-lg bg-card/50">
-                <algo.icon className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-headline text-lg mb-2 font-semibold">{algo.name}</h3>
-                <p className="text-muted-foreground text-sm">{algo.description}</p>
-              </div>
+              <Link
+                key={algo.name}
+                href={algo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:scale-105 transition-transform duration-200"
+              >
+                <div className="p-6 border rounded-lg bg-card/50 h-full">
+                  <algo.icon className="h-8 w-8 text-primary mb-3" />
+                  <h3 className="font-headline text-lg mb-2 font-semibold">{algo.name}</h3>
+                  <p className="text-muted-foreground text-sm">{algo.description}</p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
