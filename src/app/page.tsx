@@ -38,6 +38,14 @@ const algorithmDetails: Record<Algorithm, { name: string; description: string }>
   },
 };
 
+const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
+  const lowerCaseName = name.toLowerCase();
+  if (lowerCaseName.includes('huffman')) return 'huffman';
+  if (lowerCaseName.includes('rle') || lowerCaseName.includes('run-length')) return 'rle';
+  if (lowerCaseName.includes('lz77')) return 'lz77';
+  return undefined;
+};
+
 const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOutput => {
   if (fileType === 'text') {
     return {
@@ -88,10 +96,18 @@ export default function ShrinkWrapPage() {
     try {
       const suggestion = await suggestCompressionAlgorithm({ fileType });
       setAiSuggestion(suggestion);
+      const suggestedKey = getAlgorithmKeyByName(suggestion.suggestedAlgorithm);
+      if (suggestedKey) {
+        setAlgorithm(suggestedKey);
+      }
     } catch (err) {
       console.error(err);
       const fallbackSuggestion = getFallbackSuggestion(fileType);
       setAiSuggestion(fallbackSuggestion);
+      const fallbackKey = getAlgorithmKeyByName(fallbackSuggestion.suggestedAlgorithm);
+      if (fallbackKey) {
+        setAlgorithm(fallbackKey);
+      }
 
       toast({
         title: 'AI Suggestion Failed',
