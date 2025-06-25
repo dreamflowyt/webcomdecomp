@@ -9,6 +9,24 @@ ShrinkWrap is a modern, intelligent file compression and decompression tool buil
 - **Easy Sharing:** Download your processed files or email them directly to any recipient.
 - **Educational:** Learn about different compression algorithms with explanations and links to further reading.
 
+## Quick Start
+
+### 🌐 Live Demo
+Visit the live application: [https://shrinkwrap.onrender.com](https://shrinkwrap.onrender.com)
+
+### 🚀 Local Development
+Want to run it locally? Check out our [Local Development Guide](./LOCAL_DEVELOPMENT.md) for detailed setup instructions.
+
+**Quick local setup:**
+```bash
+git clone https://github.com/dreamflowyt/webcomdecomp.git
+cd webcomdecomp
+npm install
+cp env.example .env.local
+# Edit .env.local with your API keys
+npm run dev
+```
+
 ## Getting Started: Running Locally
 
 Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
@@ -30,11 +48,11 @@ npm install
 
 The application uses environment variables to configure the email sending functionality.
 
-1.  Create a `.env` file in the root of the project by copying the example file:
+1.  Create a `.env.local` file in the root of the project by copying the example file:
     ```bash
-    cp .env.example .env
+    cp env.example .env.local
     ```
-2.  Open the `.env` file and fill in the required values for your SMTP server. For using Gmail, you will need to generate an [App Password](https://myaccount.google.com/apppasswords).
+2.  Open the `.env.local` file and fill in the required values for your SMTP server. For using Gmail, you will need to generate an [App Password](https://myaccount.google.com/apppasswords).
 
     ```dotenv
     # Google AI API Key for Gemini models
