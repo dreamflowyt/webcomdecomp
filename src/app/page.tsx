@@ -261,7 +261,7 @@ export default function ShrinkWrapPage() {
   return (
     <div className="min-h-screen bg-background dark:bg-black/95">
       <div className="container mx-auto px-4 py-8 md:py-12">
-        <header className="text-center mb-10">
+        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-6 mb-10 text-center">
           <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">ShrinkWrap</h1>
           <p className="text-muted-foreground mt-2 text-lg">Intelligent file compression and decompression.</p>
         </header>
