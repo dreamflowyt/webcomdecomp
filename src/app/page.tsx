@@ -115,19 +115,29 @@ export default function ShrinkWrapPage() {
     if (!file || !results || !processedContent) return { content: '', fileName: '' };
 
     const content = processedContent;
-    
     let fileName = 'processed_file.txt';
     
     if (results.type === 'compression') {
         fileName = `${file.name}.${algorithm}.shrnk`;
     } else { // Decompression
-        const nameParts = file.name.split('.');
-        if (nameParts.length > 2 && nameParts[nameParts.length - 1].toLowerCase() === 'shrnk') {
-             fileName = nameParts.slice(0, -2).join('.');
+        const compressedName = file.name;
+        const lastDotIndex = compressedName.lastIndexOf('.');
+        if (lastDotIndex !== -1 && compressedName.substring(lastDotIndex + 1).toLowerCase() === 'shrnk') {
+            const nameWithoutExt = compressedName.substring(0, lastDotIndex);
+            const secondLastDotIndex = nameWithoutExt.lastIndexOf('.');
+            if (secondLastDotIndex !== -1) {
+                const detectedAlgorithmKey = nameWithoutExt.substring(secondLastDotIndex + 1).toLowerCase();
+                if (Object.keys(algorithmDetails).includes(detectedAlgorithmKey)) {
+                    fileName = nameWithoutExt.substring(0, secondLastDotIndex);
+                } else {
+                    fileName = nameWithoutExt + '_decompressed';
+                }
+            } else {
+                 fileName = nameWithoutExt + '_decompressed';
+            }
         } else {
-             // Fallback for unexpected format
-             const baseName = nameParts.slice(0, -1).join('.');
-             fileName = `${baseName || file.name}_decompressed.txt`;
+             const baseName = compressedName.split('.').slice(0,-1).join('.') || compressedName;
+             fileName = `${baseName}_decompressed.txt`;
         }
     }
     return { content, fileName };
@@ -144,24 +154,29 @@ export default function ShrinkWrapPage() {
     setCanCompress(false);
     setCanDecompress(false);
 
-    const nameParts = selectedFile.name.split('.');
-    const fileExtension = nameParts.length > 1 ? nameParts[nameParts.length - 1].toLowerCase() : '';
+    const compressedFileName = selectedFile.name;
+    const lastDotIndex = compressedFileName.lastIndexOf('.');
     
-    if (fileExtension === 'shrnk' && nameParts.length > 2) {
-      const detectedAlgorithmKey = nameParts[nameParts.length - 2].toLowerCase();
-      const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
-      
-      if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
-        setAlgorithm(detectedAlgorithmKey as Algorithm);
-        toast({
-          title: 'Compressed File Detected',
-          description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
-        });
-        setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
-        setCanCompress(false);
-        setCanDecompress(true);
-        return;
-      }
+    if (lastDotIndex !== -1 && compressedFileName.substring(lastDotIndex + 1).toLowerCase() === 'shrnk') {
+        const nameWithoutExt = compressedFileName.substring(0, lastDotIndex);
+        const secondLastDotIndex = nameWithoutExt.lastIndexOf('.');
+
+        if (secondLastDotIndex !== -1) {
+            const detectedAlgorithmKey = nameWithoutExt.substring(secondLastDotIndex + 1).toLowerCase();
+            const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
+
+            if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
+                setAlgorithm(detectedAlgorithmKey as Algorithm);
+                toast({
+                    title: 'Compressed File Detected',
+                    description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
+                });
+                setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
+                setCanCompress(false);
+                setCanDecompress(true);
+                return;
+            }
+        }
     }
 
     setCanDecompress(false);
@@ -243,6 +258,9 @@ export default function ShrinkWrapPage() {
 
           const base64Marker = ';base64,';
           const base64Index = fileDataUrl.indexOf(base64Marker);
+          if (base64Index === -1) {
+            throw new Error("Invalid file format: not a data URL.");
+          }
           const header = fileDataUrl.substring(0, base64Index + base64Marker.length);
           const originalBase64 = fileDataUrl.substring(base64Index + base64Marker.length);
           
@@ -360,7 +378,6 @@ export default function ShrinkWrapPage() {
     const MAX_ATTACHMENT_SIZE_MB = 20;
     const MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
     
-    // Estimate attachment size from base64 string
     const attachmentSize = content.length * 0.75;
 
     if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
