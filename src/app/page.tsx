@@ -20,7 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 
-type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate' | 'pdf-optimization';
+type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate' | 'pdfopt';
 type OperationType = 'compression' | 'decompression';
 
 interface Results {
@@ -48,7 +48,7 @@ const algorithmDetails: Record<Algorithm, { name: string; description: string }>
     name: 'DEFLATE',
     description: 'Combines LZ77 and Huffman. Great for general purpose use.',
   },
-  'pdf-optimization': {
+  pdfopt: {
     name: 'PDF Optimization',
     description: 'Advanced optimization for PDF files, including image re-compression.',
   },
@@ -60,7 +60,7 @@ const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
   if (lowerCaseName.includes('rle') || lowerCaseName.includes('run-length')) return 'rle';
   if (lowerCaseName.includes('lz77')) return 'lz77';
   if (lowerCaseName.includes('deflate')) return 'deflate';
-  if (lowerCaseName.includes('pdf')) return 'pdf-optimization';
+  if (lowerCaseName.includes('pdf')) return 'pdfopt';
   return undefined;
 };
 
@@ -121,19 +121,15 @@ export default function ShrinkWrapPage() {
         fileName = `${file.name}.${algorithm}.shrnk`;
     } else { // Decompression
         const compressedName = file.name;
-        const lastDotIndex = compressedName.lastIndexOf('.');
-        if (lastDotIndex !== -1 && compressedName.substring(lastDotIndex + 1).toLowerCase() === 'shrnk') {
-            const nameWithoutExt = compressedName.substring(0, lastDotIndex);
-            const secondLastDotIndex = nameWithoutExt.lastIndexOf('.');
-            if (secondLastDotIndex !== -1) {
-                const detectedAlgorithmKey = nameWithoutExt.substring(secondLastDotIndex + 1).toLowerCase();
-                if (Object.keys(algorithmDetails).includes(detectedAlgorithmKey)) {
-                    fileName = nameWithoutExt.substring(0, secondLastDotIndex);
-                } else {
-                    fileName = nameWithoutExt + '_decompressed';
-                }
+        const parts = compressedName.split('.');
+        
+        if (parts.length >= 3 && parts[parts.length - 1].toLowerCase() === 'shrnk') {
+            const detectedAlgorithmKey = parts[parts.length - 2].toLowerCase();
+            if (Object.keys(algorithmDetails).includes(detectedAlgorithmKey)) {
+                fileName = parts.slice(0, parts.length - 2).join('.');
             } else {
-                 fileName = nameWithoutExt + '_decompressed';
+                const nameWithoutShrnk = compressedName.substring(0, compressedName.lastIndexOf('.'));
+                fileName = nameWithoutShrnk + '_decompressed';
             }
         } else {
              const baseName = compressedName.split('.').slice(0,-1).join('.') || compressedName;
@@ -155,30 +151,25 @@ export default function ShrinkWrapPage() {
     setCanDecompress(false);
 
     const compressedFileName = selectedFile.name;
-    const lastDotIndex = compressedFileName.lastIndexOf('.');
+    const parts = compressedFileName.split('.');
     
-    if (lastDotIndex !== -1 && compressedFileName.substring(lastDotIndex + 1).toLowerCase() === 'shrnk') {
-        const nameWithoutExt = compressedFileName.substring(0, lastDotIndex);
-        const secondLastDotIndex = nameWithoutExt.lastIndexOf('.');
+    if (parts.length >= 3 && parts[parts.length - 1].toLowerCase() === 'shrnk') {
+        const detectedAlgorithmKey = parts[parts.length - 2].toLowerCase();
+        const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
 
-        if (secondLastDotIndex !== -1) {
-            const detectedAlgorithmKey = nameWithoutExt.substring(secondLastDotIndex + 1).toLowerCase();
-            const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
-
-            if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
-                setAlgorithm(detectedAlgorithmKey as Algorithm);
-                toast({
-                    title: 'Compressed File Detected',
-                    description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
-                });
-                setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
-                setCanCompress(false);
-                setCanDecompress(true);
-                return;
-            }
+        if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
+            setAlgorithm(detectedAlgorithmKey as Algorithm);
+            toast({
+                title: 'Compressed File Detected',
+                description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
+            });
+            setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
+            setCanCompress(false);
+            setCanDecompress(true);
+            return;
         }
     }
-
+    
     setCanDecompress(false);
     setCanCompress(true);
     setIsAiLoading(true);
@@ -264,7 +255,7 @@ export default function ShrinkWrapPage() {
           const header = fileDataUrl.substring(0, base64Index + base64Marker.length);
           const originalBase64 = fileDataUrl.substring(base64Index + base64Marker.length);
           
-          const compressionFactors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
+          const compressionFactors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, pdfopt: 0.35 };
           
           const getByteSize = (base64: string) => Math.ceil(base64.length / 4) * 3;
           const originalByteSize = getByteSize(originalBase64);
