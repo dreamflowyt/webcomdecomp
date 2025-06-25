@@ -312,9 +312,11 @@ export default function ShrinkWrapPage() {
                   <Label className="font-semibold mb-2 block">Choose an algorithm:</Label>
                   <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an algorithm..." />
+                      <SelectValue placeholder="Select an algorithm...">
+                        {algorithm && algorithmDetails[algorithm]?.name}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="w-[300px]">
                       {Object.entries(algorithmDetails).map(([key, { name, description }]) => (
                         <SelectItem key={key} value={key}>
                           <div className="flex flex-col items-start">
