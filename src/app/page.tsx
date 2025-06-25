@@ -4,7 +4,7 @@ import { useState, useRef, useMemo, useCallback } from 'react';
 import { suggestCompressionAlgorithm, SuggestCompressionAlgorithmOutput } from '@/ai/flows/suggest-compression-algorithm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -304,20 +304,25 @@ export default function ShrinkWrapPage() {
                   </div>
                 )}
                 
-                <RadioGroup value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)}>
+                <div>
                   <Label className="font-semibold mb-2 block">Choose an algorithm:</Label>
-                  <div className="space-y-3">
-                    {Object.entries(algorithmDetails).map(([key, { name, description }]) => (
-                      <Label key={key} htmlFor={key} className="flex items-start p-3 border rounded-md cursor-pointer has-[:checked]:bg-secondary has-[:checked]:border-primary transition-all">
-                        <RadioGroupItem value={key} id={key} className="mt-1" />
-                        <div className="ml-3">
-                           <span className="font-medium block">{name}</span>
-                           <span className="text-sm text-muted-foreground">{description}</span>
-                        </div>
-                      </Label>
-                    ))}
-                  </div>
-                </RadioGroup>
+                  <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an algorithm..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(algorithmDetails).map(([key, { name, description }]) => (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex flex-col items-start">
+                            <p className="font-medium">{name}</p>
+                            <p className="text-xs text-muted-foreground">{description}</p>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
               </CardContent>
               <CardFooter className="flex flex-col sm:flex-row gap-2">
                 <Button onClick={() => processFile('compression')} disabled={isProcessing || !file} className="w-full">
