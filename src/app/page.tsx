@@ -148,7 +148,7 @@ export default function ShrinkWrapPage() {
     const fileExtension = nameParts.length > 1 ? nameParts[nameParts.length - 1].toLowerCase() : '';
     
     if (fileExtension === 'shrnk' && nameParts.length > 2) {
-      const detectedAlgorithmKey = nameParts[nameParts.length - 2];
+      const detectedAlgorithmKey = nameParts[nameParts.length - 2].toLowerCase();
       const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
       
       if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
