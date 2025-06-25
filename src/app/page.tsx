@@ -292,6 +292,19 @@ export default function ShrinkWrapPage() {
     if (!file || !results) return;
     const { content, fileName } = getProcessedFileContent();
 
+    const MAX_ATTACHMENT_SIZE_MB = 20;
+    const MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
+    const attachmentSize = new Blob([content]).size;
+
+    if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
+        toast({
+            variant: 'destructive',
+            title: 'File Too Large',
+            description: `The processed file is larger than ${MAX_ATTACHMENT_SIZE_MB}MB and cannot be sent via email.`,
+        });
+        return;
+    }
+
     const formData = new FormData();
     formData.append('to', values.email);
     formData.append('fileName', fileName);
