@@ -114,13 +114,18 @@ export default function ShrinkWrapPage() {
     const content = `This is a dummy file processed by ShrinkWrap.\n- Original File: ${file.name}\n- Algorithm: ${algorithmDetails[algorithm].name}\n- Operation: ${results.type}`;
     
     let fileName = 'processed_file.txt';
-    const nameParts = file.name.split('.');
-    const baseName = nameParts.slice(0, -1).join('.');
-
+    
     if (results.type === 'compression') {
-        fileName = `${baseName || file.name}.${algorithm}.shrnk`;
-    } else {
-        fileName = `${baseName}_decompressed.${nameParts.pop() || 'txt'}`;
+        fileName = `${file.name}.${algorithm}.shrnk`;
+    } else { // Decompression
+        const nameParts = file.name.split('.');
+        if (nameParts.length > 2 && nameParts[nameParts.length - 1].toLowerCase() === 'shrnk') {
+             fileName = nameParts.slice(0, -2).join('.');
+        } else {
+             // Fallback for unexpected format
+             const baseName = nameParts.slice(0, -1).join('.');
+             fileName = `${baseName || file.name}_decompressed.txt`;
+        }
     }
     return { content, fileName };
   }, [file, results, algorithm]);
@@ -132,15 +137,34 @@ export default function ShrinkWrapPage() {
     setFile(selectedFile);
     setResults(null);
     setAiSuggestion(null);
+
+    const nameParts = selectedFile.name.split('.');
+    const fileExtension = nameParts.length > 1 ? nameParts[nameParts.length - 1].toLowerCase() : '';
+    
+    if (fileExtension === 'shrnk' && nameParts.length > 2) {
+      const detectedAlgorithmKey = nameParts[nameParts.length - 2];
+      const validAlgorithmKeys = Object.keys(algorithmDetails) as Algorithm[];
+      
+      if (validAlgorithmKeys.includes(detectedAlgorithmKey as Algorithm)) {
+        setAlgorithm(detectedAlgorithmKey as Algorithm);
+        toast({
+          title: 'Compressed File Detected',
+          description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
+        });
+        setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
+        return;
+      }
+    }
+
     setIsAiLoading(true);
 
-    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'binary';
+    const regularFileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'binary';
     let fileType = 'binary';
-    if (['txt', 'md', 'html', 'css', 'js', 'json', 'xml'].includes(fileExtension)) {
+    if (['txt', 'md', 'html', 'css', 'js', 'json', 'xml'].includes(regularFileExtension)) {
       fileType = 'text';
-    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(fileExtension)) {
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(regularFileExtension)) {
       fileType = 'image';
-    } else if (fileExtension === 'pdf') {
+    } else if (regularFileExtension === 'pdf') {
       fileType = 'pdf';
     }
 
@@ -471,7 +495,11 @@ export default function ShrinkWrapPage() {
                   </div>
                 ) : aiSuggestion ? (
                   <div>
-                    <p className="font-medium">For your file type, we suggest: <span className="text-primary">{aiSuggestion.suggestedAlgorithm}</span></p>
+                    {aiSuggestion.suggestedAlgorithm.startsWith('Not applicable') ? (
+                       <p className="font-medium">{aiSuggestion.suggestedAlgorithm}</p>
+                    ) : (
+                       <p className="font-medium">For your file type, we suggest: <span className="text-primary">{aiSuggestion.suggestedAlgorithm}</span></p>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">Upload a file to get an AI-powered recommendation.</p>
