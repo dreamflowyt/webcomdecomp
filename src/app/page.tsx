@@ -1,16 +1,24 @@
 'use client';
 
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { suggestCompressionAlgorithm, SuggestCompressionAlgorithmOutput } from '@/ai/flows/suggest-compression-algorithm';
+import { sendEmail } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { formatBytes } from '@/lib/utils';
-import { UploadCloud, File as FileIcon, X, Sparkles, Cpu, Download, BarChart2, CircleDashed } from 'lucide-react';
+import { UploadCloud, File as FileIcon, X, Sparkles, Cpu, Download, BarChart2, CircleDashed, Mail } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
 
 type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate' | 'pdf-optimization';
 type OperationType = 'compression' | 'decompression';
@@ -77,6 +85,10 @@ const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOut
   };
 };
 
+const EmailSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+});
+
 export default function ShrinkWrapPage() {
   const [file, setFile] = useState<File | null>(null);
   const [algorithm, setAlgorithm] = useState<Algorithm>('deflate');
@@ -84,9 +96,34 @@ export default function ShrinkWrapPage() {
   const [results, setResults] = useState<Results | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<SuggestCompressionAlgorithmOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof EmailSchema>>({
+    resolver: zodResolver(EmailSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const getProcessedFileContent = useCallback(() => {
+    if (!file || !results) return { content: '', fileName: '' };
+
+    const content = `This is a dummy file processed by ShrinkWrap.\n- Original File: ${file.name}\n- Algorithm: ${algorithmDetails[algorithm].name}\n- Operation: ${results.type}`;
+    
+    let fileName = 'processed_file.txt';
+    const nameParts = file.name.split('.');
+    const baseName = nameParts.slice(0, -1).join('.');
+
+    if (results.type === 'compression') {
+        fileName = `${baseName || file.name}.${algorithm}.shrnk`;
+    } else {
+        fileName = `${baseName}_decompressed.${nameParts.pop() || 'txt'}`;
+    }
+    return { content, fileName };
+  }, [file, results, algorithm]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -185,27 +222,44 @@ export default function ShrinkWrapPage() {
   const handleDownload = () => {
     if (!file || !results) return;
 
-    const content = `This is a dummy file processed by ShrinkWrap.\n- Original File: ${file.name}\n- Algorithm: ${algorithmDetails[algorithm].name}\n- Operation: ${results.type}`;
+    const { content, fileName } = getProcessedFileContent();
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     
-    let fileName = 'processed_file.txt';
-    const nameParts = file.name.split('.');
-    const baseName = nameParts.slice(0, -1).join('.');
-
-    if (results.type === 'compression') {
-        fileName = `${baseName || file.name}.${algorithm}.shrnk`;
-    } else {
-        fileName = `${baseName}_decompressed.${nameParts.pop()}`;
-    }
-
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleSendEmail = async (values: z.infer<typeof EmailSchema>) => {
+    if (!file || !results) return;
+    const { content, fileName } = getProcessedFileContent();
+
+    const formData = new FormData();
+    formData.append('to', values.email);
+    formData.append('fileName', fileName);
+    formData.append('fileContent', content);
+
+    const result = await sendEmail(formData);
+
+    if (result.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Email Failed to Send',
+        description: result.error,
+      });
+    } else if (result.success) {
+      toast({
+        title: 'Email Sent!',
+        description: result.success,
+      });
+      setIsEmailDialogOpen(false);
+      form.reset();
+    }
   };
 
   const renderResults = () => {
@@ -250,10 +304,51 @@ export default function ShrinkWrapPage() {
           <span className="font-medium">{results.processingTime.toFixed(2)}s</span>
         </div>
         <Separator className="my-4" />
-        <Button onClick={handleDownload} className="w-full bg-accent hover:bg-accent/90">
-          <Download className="mr-2 h-4 w-4" />
-          Download Processed File
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+            <Button onClick={handleDownload} className="w-full bg-accent hover:bg-accent/90">
+                <Download className="mr-2 h-4 w-4" />
+                Download
+            </Button>
+            <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send via Email
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Send File via Email</DialogTitle>
+                        <DialogDescription>
+                            Enter the recipient's email address below.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(handleSendEmail)} className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Recipient Email</FormLabel>
+                              <FormControl>
+                                <Input placeholder="recipient@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                         <DialogFooter>
+                            <Button type="button" variant="ghost" onClick={() => setIsEmailDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit" disabled={form.formState.isSubmitting}>
+                                {form.formState.isSubmitting ? 'Sending...' : 'Send Email'}
+                            </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+        </div>
       </div>
     );
   };
@@ -312,8 +407,8 @@ export default function ShrinkWrapPage() {
                   <Label className="font-semibold mb-2 block">Choose an algorithm:</Label>
                   <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an algorithm...">
-                        {algorithm && algorithmDetails[algorithm]?.name}
+                      <SelectValue>
+                        {algorithmDetails[algorithm]?.name}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
