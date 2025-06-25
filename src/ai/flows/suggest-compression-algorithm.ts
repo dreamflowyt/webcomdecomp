@@ -28,6 +28,7 @@ export async function suggestCompressionAlgorithm(input: SuggestCompressionAlgor
 
 const prompt = ai.definePrompt({
   name: 'suggestCompressionAlgorithmPrompt',
+  model: 'googleai/gemini-2.0-flash',
   input: {schema: SuggestCompressionAlgorithmInputSchema},
   output: {schema: SuggestCompressionAlgorithmOutputSchema},
   prompt: `Given the file type: {{{fileType}}}, suggest the most effective compression algorithm and explain why.
