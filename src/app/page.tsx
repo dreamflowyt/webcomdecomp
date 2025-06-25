@@ -38,6 +38,25 @@ const algorithmDetails: Record<Algorithm, { name: string; description: string }>
   },
 };
 
+const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOutput => {
+  if (fileType === 'text') {
+    return {
+      suggestedAlgorithm: 'LZ77',
+      reason: 'Fallback: LZ77 is generally effective for text files with repeating patterns.',
+    };
+  }
+  if (fileType === 'image') {
+    return {
+      suggestedAlgorithm: 'Run-Length Encoding',
+      reason: 'Fallback: RLE can be effective for images with large areas of solid color.',
+    };
+  }
+  return {
+    suggestedAlgorithm: 'Huffman Coding',
+    reason: 'Fallback: Huffman Coding is a versatile algorithm suitable for various binary files.',
+  };
+};
+
 export default function ShrinkWrapPage() {
   const [file, setFile] = useState<File | null>(null);
   const [algorithm, setAlgorithm] = useState<Algorithm>('huffman');
@@ -58,23 +77,25 @@ export default function ShrinkWrapPage() {
     setAiSuggestion(null);
     setIsAiLoading(true);
 
-    try {
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'binary';
-      let fileType = 'binary';
-      if (['txt', 'md', 'html', 'css', 'js', 'json', 'xml'].includes(fileExtension)) {
-        fileType = 'text';
-      } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(fileExtension)) {
-        fileType = 'image';
-      }
+    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'binary';
+    let fileType = 'binary';
+    if (['txt', 'md', 'html', 'css', 'js', 'json', 'xml'].includes(fileExtension)) {
+      fileType = 'text';
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(fileExtension)) {
+      fileType = 'image';
+    }
 
+    try {
       const suggestion = await suggestCompressionAlgorithm({ fileType });
       setAiSuggestion(suggestion);
     } catch (err) {
       console.error(err);
+      const fallbackSuggestion = getFallbackSuggestion(fileType);
+      setAiSuggestion(fallbackSuggestion);
+
       toast({
-        variant: 'destructive',
         title: 'AI Suggestion Failed',
-        description: 'Could not get an algorithm suggestion. Please select one manually.',
+        description: 'Using a fallback suggestion based on your file type.',
       });
     } finally {
       setIsAiLoading(false);
