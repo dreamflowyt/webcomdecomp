@@ -37,6 +37,9 @@ The application uses environment variables to configure the email sending functi
 2.  Open the `.env` file and fill in the required values for your SMTP server. For using Gmail, you will need to generate an [App Password](https://myaccount.google.com/apppasswords).
 
     ```dotenv
+    # Google AI API Key for Gemini models
+    GOOGLE_AI_API_KEY=your-google-ai-api-key-here
+    
     # SMTP Server Configuration for sending emails
     EMAIL_SERVER_HOST="smtp.gmail.com"
     EMAIL_SERVER_PORT=587
@@ -72,3 +75,17 @@ This service runs in the background and is called by the Next.js application. Yo
 ---
 
 That's it! You should now have the full ShrinkWrap application running on your local machine.
+
+## Deployment
+
+### Deploying to Render
+
+This project is configured for easy deployment on Render. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+**Quick Setup:**
+1. Connect your GitHub repository to Render
+2. Create a new Web Service
+3. Set the environment variables (see DEPLOYMENT.md)
+4. Deploy!
+
+The application will automatically handle production configuration and AI flow initialization.

@@ -2,6 +2,9 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
+// Initialize AI flows for production
+import '@/lib/init-ai';
+
 export const metadata: Metadata = {
   title: 'ShrinkWrap',
   description: 'An intelligent file compression tool.',
