@@ -280,10 +280,10 @@ export default function ShrinkWrapPage() {
               <CardContent className="space-y-6">
                 {file ? (
                   <div className="flex items-center justify-between p-3 rounded-md border bg-secondary/50">
-                    <div className="flex items-center gap-3">
-                      <FileIcon className="h-6 w-6 text-primary" />
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm truncate max-w-[200px]">{file.name}</span>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <FileIcon className="h-6 w-6 text-primary flex-shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="font-medium text-sm truncate">{file.name}</span>
                         <span className="text-xs text-muted-foreground">{formatBytes(file.size)}</span>
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export default function ShrinkWrapPage() {
                         {algorithm && algorithmDetails[algorithm]?.name}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="w-[300px]">
+                    <SelectContent>
                       {Object.entries(algorithmDetails).map(([key, { name, description }]) => (
                         <SelectItem key={key} value={key}>
                           <div className="flex flex-col items-start">
@@ -364,7 +364,7 @@ export default function ShrinkWrapPage() {
             </Card>
           </div>
 
-          <div className="sticky top-24 h-fit">
+          <div className="md:sticky top-24 h-fit">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><BarChart2 /> Results</CardTitle>
