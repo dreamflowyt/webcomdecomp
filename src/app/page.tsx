@@ -97,6 +97,8 @@ export default function ShrinkWrapPage() {
   const [aiSuggestion, setAiSuggestion] = useState<SuggestCompressionAlgorithmOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [canCompress, setCanCompress] = useState(false);
+  const [canDecompress, setCanDecompress] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -137,6 +139,8 @@ export default function ShrinkWrapPage() {
     setFile(selectedFile);
     setResults(null);
     setAiSuggestion(null);
+    setCanCompress(false);
+    setCanDecompress(false);
 
     const nameParts = selectedFile.name.split('.');
     const fileExtension = nameParts.length > 1 ? nameParts[nameParts.length - 1].toLowerCase() : '';
@@ -152,10 +156,12 @@ export default function ShrinkWrapPage() {
           description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
         });
         setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
+        setCanDecompress(true);
         return;
       }
     }
 
+    setCanCompress(true);
     setIsAiLoading(true);
 
     const regularFileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || 'binary';
@@ -198,6 +204,8 @@ export default function ShrinkWrapPage() {
     setFile(null);
     setResults(null);
     setAiSuggestion(null);
+    setCanCompress(false);
+    setCanDecompress(false);
     if(fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -450,7 +458,7 @@ export default function ShrinkWrapPage() {
                 
                 <div>
                   <Label className="font-semibold mb-2 block">Choose an algorithm:</Label>
-                  <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)}>
+                  <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)} disabled={!canCompress}>
                     <SelectTrigger className="w-full">
                       <SelectValue>
                         {algorithmDetails[algorithm]?.name}
@@ -471,10 +479,10 @@ export default function ShrinkWrapPage() {
 
               </CardContent>
               <CardFooter className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={() => processFile('compression')} disabled={isProcessing || !file} className="w-full">
+                <Button onClick={() => processFile('compression')} disabled={isProcessing || !canCompress} className="w-full">
                   Compress
                 </Button>
-                <Button onClick={() => processFile('decompression')} disabled={isProcessing || !file} variant="outline" className="w-full">
+                <Button onClick={() => processFile('decompression')} disabled={isProcessing || !canDecompress} variant="outline" className="w-full">
                   Decompress
                 </Button>
               </CardFooter>
