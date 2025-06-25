@@ -91,6 +91,7 @@ const EmailSchema = z.object({
 
 export default function ShrinkWrapPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [processedContent, setProcessedContent] = useState<string | null>(null);
   const [algorithm, setAlgorithm] = useState<Algorithm>('deflate');
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
@@ -111,9 +112,9 @@ export default function ShrinkWrapPage() {
   });
 
   const getProcessedFileContent = useCallback(() => {
-    if (!file || !results) return { content: '', fileName: '' };
+    if (!file || !results || !processedContent) return { content: '', fileName: '' };
 
-    const content = `This is a dummy file processed by ShrinkWrap.\n- Original File: ${file.name}\n- Algorithm: ${algorithmDetails[algorithm].name}\n- Operation: ${results.type}`;
+    const content = processedContent;
     
     let fileName = 'processed_file.txt';
     
@@ -130,7 +131,7 @@ export default function ShrinkWrapPage() {
         }
     }
     return { content, fileName };
-  }, [file, results, algorithm]);
+  }, [file, results, processedContent, algorithm]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -139,6 +140,7 @@ export default function ShrinkWrapPage() {
     setFile(selectedFile);
     setResults(null);
     setAiSuggestion(null);
+    setProcessedContent(null);
     setCanCompress(false);
     setCanDecompress(false);
 
@@ -156,11 +158,13 @@ export default function ShrinkWrapPage() {
           description: `Algorithm "${algorithmDetails[detectedAlgorithmKey as Algorithm].name}" detected. Ready for decompression.`,
         });
         setAiSuggestion({ suggestedAlgorithm: 'Not applicable for decompression' });
+        setCanCompress(false);
         setCanDecompress(true);
         return;
       }
     }
 
+    setCanDecompress(false);
     setCanCompress(true);
     setIsAiLoading(true);
 
@@ -204,6 +208,7 @@ export default function ShrinkWrapPage() {
     setFile(null);
     setResults(null);
     setAiSuggestion(null);
+    setProcessedContent(null);
     setCanCompress(false);
     setCanDecompress(false);
     if(fileInputRef.current) {
@@ -223,45 +228,60 @@ export default function ShrinkWrapPage() {
 
     setIsProcessing(true);
     setResults(null);
+    setProcessedContent(null);
 
-    const startTime = performance.now();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileDataUrl = e.target?.result as string;
+      setProcessedContent(fileDataUrl);
 
-    setTimeout(() => {
-      try {
-        // In a real app, this is where the compression/decompression logic would be.
-        // It's wrapped in a try/catch to handle any potential processing errors.
-        let processedSize: number, ratio: number | undefined;
-        const originalSize = file.size;
+      const startTime = performance.now();
 
-        if (type === 'compression') {
-          const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
-          processedSize = originalSize * factors[algorithm];
-          ratio = ((originalSize - processedSize) / originalSize) * 100;
-        } else { // Decompression
-          const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
-          processedSize = originalSize * factors[algorithm];
+      setTimeout(() => {
+        try {
+          // The metrics are simulated, but the content is real.
+          let processedSize: number, ratio: number | undefined;
+          const originalSize = file.size;
+
+          if (type === 'compression') {
+            const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
+            processedSize = originalSize * factors[algorithm];
+            ratio = ((originalSize - processedSize) / originalSize) * 100;
+          } else { // Decompression
+            const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
+            processedSize = originalSize * factors[algorithm];
+          }
+          
+          const processingTime = (performance.now() - startTime) / 1000;
+
+          setResults({
+            originalSize: type === 'compression' ? originalSize : processedSize,
+            processedSize: type === 'compression' ? processedSize : originalSize,
+            ratio,
+            processingTime,
+            type,
+          });
+        } catch (error) {
+          toast({
+              variant: 'destructive',
+              title: 'Processing Error',
+              description: `An unexpected error occurred during file ${type}. Please try again.`,
+          });
+          setResults(null);
+        } finally {
+          setIsProcessing(false);
         }
-        
-        const processingTime = (performance.now() - startTime) / 1000;
-
-        setResults({
-          originalSize: type === 'compression' ? originalSize : processedSize,
-          processedSize: type === 'compression' ? processedSize : originalSize,
-          ratio,
-          processingTime,
-          type,
-        });
-      } catch (error) {
+      }, 1500 + Math.random() * 500);
+    };
+    reader.onerror = () => {
         toast({
             variant: 'destructive',
-            title: 'Processing Error',
-            description: `An unexpected error occurred during file ${type}. Please try again.`,
+            title: 'File Read Error',
+            description: 'Could not read the contents of the uploaded file.',
         });
-        setResults(null);
-      } finally {
         setIsProcessing(false);
-      }
-    }, 1500 + Math.random() * 500);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDownload = () => {
@@ -269,16 +289,20 @@ export default function ShrinkWrapPage() {
 
     try {
       const { content, fileName } = getProcessedFileContent();
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
+       if (!content) {
+        toast({
+            variant: 'destructive',
+            title: 'Download Error',
+            description: 'No processed file content available to download.',
+        });
+        return;
+      }
       const a = document.createElement('a');
-      
-      a.href = url;
+      a.href = content;
       a.download = fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     } catch (error) {
        toast({
         variant: 'destructive',
@@ -291,12 +315,19 @@ export default function ShrinkWrapPage() {
   const handleSendEmail = async (values: z.infer<typeof EmailSchema>) => {
     if (!file || !results) return;
     const { content, fileName } = getProcessedFileContent();
+    if (!content) {
+        toast({
+            variant: 'destructive',
+            title: 'Email Error',
+            description: 'No processed file content available to send.',
+        });
+        return;
+    }
 
     const MAX_ATTACHMENT_SIZE_MB = 20;
     const MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
-    const attachmentSize = new Blob([content]).size;
 
-    if (attachmentSize > MAX_ATTACHMENT_SIZE_BYTES) {
+    if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
         toast({
             variant: 'destructive',
             title: 'File Too Large',
@@ -469,12 +500,12 @@ export default function ShrinkWrapPage() {
                   </div>
                 )}
                 
-                <div>
+                <div className="md:h-24">
                   <Label className="font-semibold mb-2 block">Choose an algorithm:</Label>
                   <Select value={algorithm} onValueChange={(v) => setAlgorithm(v as Algorithm)} disabled={!canCompress}>
                     <SelectTrigger className="w-full">
-                      <SelectValue>
-                        {algorithmDetails[algorithm]?.name}
+                       <SelectValue>
+                        {algorithmDetails[algorithm]?.name || 'Select an algorithm'}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
