@@ -60,7 +60,7 @@ export async function sendEmail(formData: FormData) {
   } catch (error) {
     console.error('SMTP connection error:', error);
     return {
-      error: 'Failed to connect to email server. Please check configuration.',
+      error: 'Could not connect to the email server. Please check configuration or try again later.',
     };
   }
   

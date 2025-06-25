@@ -161,6 +161,7 @@ export default function ShrinkWrapPage() {
       }
 
       toast({
+        variant: 'destructive',
         title: 'AI Suggestion Failed',
         description: 'Using a fallback suggestion based on your file type.',
       });
@@ -194,45 +195,65 @@ export default function ShrinkWrapPage() {
     const startTime = performance.now();
 
     setTimeout(() => {
-      let processedSize: number, ratio: number | undefined;
-      const originalSize = file.size;
+      try {
+        // In a real app, this is where the compression/decompression logic would be.
+        // It's wrapped in a try/catch to handle any potential processing errors.
+        let processedSize: number, ratio: number | undefined;
+        const originalSize = file.size;
 
-      if (type === 'compression') {
-        const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
-        processedSize = originalSize * factors[algorithm];
-        ratio = ((originalSize - processedSize) / originalSize) * 100;
-      } else { // Decompression
-        const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
-        processedSize = originalSize * factors[algorithm]; // Here originalSize is the compressed size
+        if (type === 'compression') {
+          const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
+          processedSize = originalSize * factors[algorithm];
+          ratio = ((originalSize - processedSize) / originalSize) * 100;
+        } else { // Decompression
+          const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
+          processedSize = originalSize * factors[algorithm];
+        }
+        
+        const processingTime = (performance.now() - startTime) / 1000;
+
+        setResults({
+          originalSize: type === 'compression' ? originalSize : processedSize,
+          processedSize: type === 'compression' ? processedSize : originalSize,
+          ratio,
+          processingTime,
+          type,
+        });
+      } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Processing Error',
+            description: `An unexpected error occurred during file ${type}. Please try again.`,
+        });
+        setResults(null);
+      } finally {
+        setIsProcessing(false);
       }
-      
-      const processingTime = (performance.now() - startTime) / 1000;
-
-      setResults({
-        originalSize: type === 'compression' ? originalSize : processedSize,
-        processedSize: type === 'compression' ? processedSize : originalSize,
-        ratio,
-        processingTime,
-        type,
-      });
-      setIsProcessing(false);
     }, 1500 + Math.random() * 500);
   };
 
   const handleDownload = () => {
     if (!file || !results) return;
 
-    const { content, fileName } = getProcessedFileContent();
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const { content, fileName } = getProcessedFileContent();
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+       toast({
+        variant: 'destructive',
+        title: 'Download Failed',
+        description: 'An unexpected error occurred while preparing the file for download.',
+      });
+    }
   };
 
   const handleSendEmail = async (values: z.infer<typeof EmailSchema>) => {
