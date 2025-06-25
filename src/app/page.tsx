@@ -1,16 +1,13 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Shrink, Mail, BrainCircuit, Zap } from 'lucide-react';
+import { Shrink, Mail, BrainCircuit } from 'lucide-react';
 
 export default function WelcomePage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background dark:bg-black/95 text-center p-4 antialiased">
        <main className="max-w-4xl mx-auto flex flex-col items-center">
-        <div className="mb-8">
-            <div className="inline-flex items-center justify-center bg-primary/10 text-primary font-medium px-4 py-1.5 rounded-full text-sm mb-4">
-              <Zap className="mr-2 h-4 w-4" /> AI-Powered File Management
-            </div>
-            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight text-primary mb-4">
+        <div className="mb-8 text-center">
+            <h1 className="font-headline text-5xl md:text-7xl font-bold tracking-tight text-primary mb-4 mt-12">
                 ShrinkWrap
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
