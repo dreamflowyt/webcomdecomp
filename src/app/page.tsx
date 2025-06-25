@@ -319,7 +319,7 @@ export default function ShrinkWrapPage() {
                         <SelectItem key={key} value={key}>
                           <div className="flex flex-col items-start">
                             <p className="font-medium">{name}</p>
-                            <p className="text-xs text-muted-foreground">{description}</p>
+                            <p className="text-xs text-muted-foreground whitespace-normal">{description}</p>
                           </div>
                         </SelectItem>
                       ))}
