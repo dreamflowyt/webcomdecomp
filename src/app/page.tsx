@@ -12,7 +12,7 @@ import { formatBytes } from '@/lib/utils';
 import { UploadCloud, File as FileIcon, X, Sparkles, Cpu, Download, BarChart2, CircleDashed } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate';
+type Algorithm = 'huffman' | 'rle' | 'lz77' | 'deflate' | 'pdf-optimization';
 type OperationType = 'compression' | 'decompression';
 
 interface Results {
@@ -40,6 +40,10 @@ const algorithmDetails: Record<Algorithm, { name: string; description: string }>
     name: 'DEFLATE',
     description: 'Combines LZ77 and Huffman. Great for general purpose use.',
   },
+  'pdf-optimization': {
+    name: 'PDF Optimization',
+    description: 'Advanced optimization for PDF files, including image re-compression.',
+  },
 };
 
 const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
@@ -48,6 +52,7 @@ const getAlgorithmKeyByName = (name: string): Algorithm | undefined => {
   if (lowerCaseName.includes('rle') || lowerCaseName.includes('run-length')) return 'rle';
   if (lowerCaseName.includes('lz77')) return 'lz77';
   if (lowerCaseName.includes('deflate')) return 'deflate';
+  if (lowerCaseName.includes('pdf')) return 'pdf-optimization';
   return undefined;
 };
 
@@ -60,6 +65,11 @@ const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOut
   if (fileType === 'image') {
     return {
       suggestedAlgorithm: 'Run-Length Encoding',
+    };
+  }
+  if (fileType === 'pdf') {
+    return {
+      suggestedAlgorithm: 'PDF Optimization',
     };
   }
   return {
@@ -93,6 +103,8 @@ export default function ShrinkWrapPage() {
       fileType = 'text';
     } else if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'bmp', 'webp'].includes(fileExtension)) {
       fileType = 'image';
+    } else if (fileExtension === 'pdf') {
+      fileType = 'pdf';
     }
 
     try {
@@ -149,11 +161,11 @@ export default function ShrinkWrapPage() {
       const originalSize = file.size;
 
       if (type === 'compression') {
-        const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40 };
+        const factors: Record<Algorithm, number> = { huffman: 0.45, rle: 0.6, lz77: 0.55, deflate: 0.40, 'pdf-optimization': 0.35 };
         processedSize = originalSize * factors[algorithm];
         ratio = ((originalSize - processedSize) / originalSize) * 100;
       } else { // Decompression
-        const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40 };
+        const factors: Record<Algorithm, number> = { huffman: 1/0.45, rle: 1/0.6, lz77: 1/0.55, deflate: 1/0.40, 'pdf-optimization': 1/0.35 };
         processedSize = originalSize * factors[algorithm]; // Here originalSize is the compressed size
       }
       

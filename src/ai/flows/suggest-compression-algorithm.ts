@@ -12,12 +12,12 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestCompressionAlgorithmInputSchema = z.object({
-  fileType: z.string().describe('The type of the file to be compressed (e.g., text, image, binary).'),
+  fileType: z.string().describe('The type of the file to be compressed (e.g., text, image, pdf, binary).'),
 });
 export type SuggestCompressionAlgorithmInput = z.infer<typeof SuggestCompressionAlgorithmInputSchema>;
 
 const SuggestCompressionAlgorithmOutputSchema = z.object({
-  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type (e.g., Huffman, RLE, LZ77, DEFLATE).'),
+  suggestedAlgorithm: z.string().describe('The suggested compression algorithm for the given file type (e.g., Huffman, RLE, LZ77, DEFLATE, PDF Optimization).'),
 });
 export type SuggestCompressionAlgorithmOutput = z.infer<typeof SuggestCompressionAlgorithmOutputSchema>;
 
@@ -36,6 +36,9 @@ Only consider these algorithms:
 - Run-Length Encoding
 - LZ77
 - DEFLATE
+- PDF Optimization
+
+If the file type is 'pdf', you must suggest "PDF Optimization".
 
 Return only the name of the suggested algorithm. For example: "DEFLATE".
 `,
