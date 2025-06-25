@@ -79,7 +79,7 @@ const getFallbackSuggestion = (fileType: string): SuggestCompressionAlgorithmOut
 
 export default function ShrinkWrapPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [algorithm, setAlgorithm] = useState<Algorithm>('huffman');
+  const [algorithm, setAlgorithm] = useState<Algorithm>('deflate');
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<SuggestCompressionAlgorithmOutput | null>(null);
@@ -260,13 +260,17 @@ export default function ShrinkWrapPage() {
   
   return (
     <div className="min-h-screen bg-background dark:bg-black/95">
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-6 mb-10 text-center">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight text-primary">ShrinkWrap</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Intelligent file compression and decompression.</p>
-        </header>
+      <header className="sticky top-0 z-10 w-full border-b bg-background/95 backdrop-blur-sm">
+        <div className="container mx-auto flex h-16 items-center justify-center text-center">
+            <div>
+                <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">ShrinkWrap</h1>
+                <p className="text-muted-foreground text-sm">Intelligent file compression and decompression.</p>
+            </div>
+        </div>
+      </header>
 
-        <main className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <main className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           <div className="flex flex-col gap-8">
             <Card className="flex-grow">
               <CardHeader>
@@ -358,7 +362,7 @@ export default function ShrinkWrapPage() {
             </Card>
           </div>
 
-          <div className="sticky top-8 h-fit">
+          <div className="sticky top-24 h-fit">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><BarChart2 /> Results</CardTitle>
@@ -369,8 +373,8 @@ export default function ShrinkWrapPage() {
               </CardContent>
             </Card>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
