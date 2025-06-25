@@ -70,9 +70,47 @@ export async function sendEmail(formData: FormData) {
       to,
       subject: `Your processed file: ${fileName}`,
       html: `
-        <p>Hello,</p>
-        <p>Thank you for using ShrinkWrap! Your processed file, <strong>${fileName}</strong>, is attached to this email.</p>
-        <p>Best regards,<br/>The ShrinkWrap Team</p>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Processed File from ShrinkWrap</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #181a1b; font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td style="padding: 40px 20px;">
+                        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+                            <tr>
+                                <td align="center" bgcolor="#1e1f21" style="padding: 40px 0 30px 0; border: 1px solid #252629; border-bottom: none; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                                     <h1 style="color: #f92a82; font-family: 'Poppins', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 28px; margin: 0; font-weight: 700;">ShrinkWrap</h1>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td bgcolor="#1e1f21" style="padding: 20px 30px 40px 30px; border: 1px solid #252629; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td style="padding: 20px 0; color: #fcfcfc; font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace; font-size: 16px; line-height: 24px;">
+                                                Hello,
+                                                <br/><br/>
+                                                Thank you for using ShrinkWrap! Your processed file, <strong style="color: #f92a82; font-weight: 600;">${fileName}</strong>, is attached to this email.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color: #a1a1aa; font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace; font-size: 14px;">
+                                                Best regards,<br/>The ShrinkWrap Team
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
       `,
       attachments: [
         {
