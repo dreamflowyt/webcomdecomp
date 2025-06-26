@@ -45,8 +45,6 @@
 - **[Google AI (Gemini)](https://ai.google.dev/)** - Advanced AI models (optional, for advanced recommendation))
 - **[Nodemailer](https://nodemailer.com/)** - Email functionality(optional, for email service)
 
-
-
 ##  Compression Algorithms
 
 ShrinkWrap implements five powerful compression algorithms, each optimized for different file types:
@@ -80,7 +78,6 @@ ShrinkWrap implements five powerful compression algorithms, each optimized for d
 - **Compression Ratio**: upto ~35% reduction
 - **Use Cases**: PDF documents, reports, presentations
 - **How it works**: Advanced optimization including image re-compression
-
 
 ### Installation
 
@@ -118,7 +115,6 @@ ShrinkWrap implements five powerful compression algorithms, each optimized for d
 
 5. **Open your browser**
    Navigate to [http://localhost:9002](http://localhost:9002)
-
 
 <div align="center">
   
