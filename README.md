@@ -1,91 +1,129 @@
-# ShrinkWrap - Intelligent File Compression
+#  ShrinkWrap - Intelligent File Compression & Decompression
 
-ShrinkWrap is a modern, intelligent file compression and decompression tool built with Next.js and Genkit. It provides AI-powered suggestions for the best compression algorithm and allows users to easily share their processed files via email.
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![AI Powered](https://img.shields.io/badge/AI%20Powered-Gemini%202.0-orange?style=for-the-badge&logo=google)](https://ai.google.dev/)
 
-## Key Features
+> **ShrinkWrap** is a modern, intelligent file compression and decompression tool that combines cutting-edge AI technology with powerful compression algorithms to deliver optimal file size reduction with smart suggestions.
 
-- **Efficient Compression & Decompression:** Choose from multiple algorithms to compress your files, or decompress files created with ShrinkWrap.
-- **AI-Powered Suggestions:** The app analyzes your file type to recommend the most effective compression algorithm.
-- **Easy Sharing:** Download your processed files or email them directly to any recipient.
-- **Educational:** Learn about different compression algorithms with explanations and links to further reading.
+🌐 **Live Demo**: [https://shrinkwrap.onrender.com](https://shrinkwrap.onrender.com)
 
-## Getting Started: Running Locally
+## Features
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+### AI-Powered Intelligence
+- **Smart Algorithm Selection**: AI analyzes your file type and automatically suggests the most effective compression algorithm
+- **Gemini 2.0 Integration**: Powered by Google's latest AI model for intelligent recommendations(optional)
+- **Real-time Analysis**: Instant file type detection and algorithm optimization
 
-### Prerequisites
+### Advanced Compression
+- **Multiple Algorithms**: Support for 5 different compression algorithms
+- **Bidirectional Processing**: Both compression and decompression capabilities
+- **Format Detection**: Automatic detection of compressed files for seamless decompression
+- **Performance Metrics**: Real-time compression ratio and processing time analysis
 
-- [Node.js](https://nodejs.org/) (version 20 or later recommended)
-- [npm](https://www.npmjs.com/) (usually comes with Node.js)
+###  Seamless Sharing
+- **Direct Email Integration**: Send compressed files directly to any email address, size limits apply.
+- **Cross-Platform Compatibility**: Works on any device with a web browser
 
-### 1. Installation
+###  Modern User Experience
+- **Real-time Feedback**: Live progress indicators and status updates
+- **Intuitive Interface**: Clean, professional design with excellent UX
 
-First, clone the repository (or if you are in Firebase Studio, the files are already here) and install the necessary dependencies.
+## 🛠 Tech Stack
 
-```bash
-npm install
-```
+### Frontend
+- **[Next.js 15.3.3](https://nextjs.org/)** - React framework with App Router
+- **[TypeScript 5.0](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[React 18.3.1](https://reactjs.org/)** - UI library
+- **[Tailwind CSS 3.4.1](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible component primitives
+- **[Lucide React](https://lucide.dev/)** - icon library
 
-### 2. Environment Variables
+### Backend & AI
+- **[Genkit 1.8.0](https://genkit.ai/)** - AI development framework(optional, for Gemini)
+- **[Google AI (Gemini)](https://ai.google.dev/)** - Advanced AI models (optional, for advanced recommendation))
+- **[Nodemailer](https://nodemailer.com/)** - Email functionality(optional, for email service)
 
-The application uses environment variables to configure the email sending functionality.
 
-1.  Create a `.env` file in the root of the project by copying the example file:
-    ```bash
-    cp .env.example .env
-    ```
-2.  Open the `.env` file and fill in the required values for your SMTP server. For using Gmail, you will need to generate an [App Password](https://myaccount.google.com/apppasswords).
 
-    ```dotenv
-    # Google AI API Key for Gemini models
-    GOOGLE_AI_API_KEY=your-google-ai-api-key-here
+##  Compression Algorithms
+
+ShrinkWrap implements five powerful compression algorithms, each optimized for different file types:
+
+### 1. **Huffman Coding** 
+- **Best for**: Files with frequent repeating characters
+- **Compression Ratio**: uptoo ~45% reduction
+- **Use Cases**: Text files, source code, configuration files
+- **How it works**: Creates variable-length codes for characters based on frequency
+
+### 2. **Run-Length Encoding (RLE)** 
+- **Best for**: Files with long sequences of the same character
+- **Compression Ratio**: upto ~60% reduction
+- **Use Cases**: Images, simple graphics, data with repeated patterns
+- **How it works**: Replaces repeated characters with count and character pairs
+
+### 3. **LZ77** 
+- **Best for**: Text with repeating sequences of characters
+- **Compression Ratio**: upto ~55% reduction
+- **Use Cases**: Documents, web content, structured data
+- **How it works**: Uses sliding window to find and replace repeated phrases
+
+### 4. **DEFLATE** 
+- **Best for**: General purpose compression (default choice)
+- **Compression Ratio**: upto ~40% reduction
+- **Use Cases**: Archives, general files, mixed content
+- **How it works**: Combines LZ77 and Huffman coding for optimal results
+
+### 5. **PDF Optimization** 
+- **Best for**: PDF files with images and complex content
+- **Compression Ratio**: upto ~35% reduction
+- **Use Cases**: PDF documents, reports, presentations
+- **How it works**: Advanced optimization including image re-compression
+
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/chetan-psl/webcompdecomp.git
+   cd webcompdecomp
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   
+   
+   Configure your `.env` file:(optional for advanced features to work)
+   ```env
+   # Google AI API Key for Gemini models
+   GOOGLE_AI_API_KEY=your-google-ai-api-key-here 
+   
+   # SMTP Server Configuration for sending emails
+   EMAIL_SERVER_HOST=smtp.gmail.com
+   EMAIL_SERVER_PORT=587
+   EMAIL_SERVER_USER=your-email@gmail.com
+   EMAIL_SERVER_PASSWORD=your-16-digit-app-password
+   EMAIL_FROM=your-email@gmail.com
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:9002](http://localhost:9002)
+
+
+<div align="center">
+  
+  <p>
+    <a href="https://shrinkwrap.onrender.com"> Website</a> 
     
-    # SMTP Server Configuration for sending emails
-    EMAIL_SERVER_HOST="smtp.gmail.com"
-    EMAIL_SERVER_PORT=587
-    EMAIL_SERVER_USER="your-email@gmail.com"
-    EMAIL_SERVER_PASSWORD="your-16-digit-app-password"
-    EMAIL_FROM="your-email@gmail.com"
-    ```
-
-### 3. Running the Application
-
-This project consists of two main parts that need to run concurrently in separate terminals: the Next.js frontend and the Genkit AI backend.
-
-**Terminal 1: Start the Next.js Frontend**
-
-This command starts the main web application.
-
-```bash
-npm run dev
-```
-
-The app will be available at [http://localhost:9002](http://localhost:9002).
-
-**Terminal 2: Start the Genkit AI Service**
-
-This command starts the Genkit development server, which handles the AI-powered suggestions.
-
-```bash
-npm run genkit:dev
-```
-
-This service runs in the background and is called by the Next.js application. You can view the Genkit developer UI at [http://localhost:4000](http://localhost:4000) to inspect flows and traces.
-
----
-
-That's it! You should now have the full ShrinkWrap application running on your local machine.
-
-## Deployment
-
-### Deploying to Render
-
-This project is configured for easy deployment on Render. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
-
-**Quick Setup:**
-1. Connect your GitHub repository to Render
-2. Create a new Web Service
-3. Set the environment variables (see DEPLOYMENT.md)
-4. Deploy!
-
-The application will automatically handle production configuration and AI flow initialization.
+  </p>
+</div> 
